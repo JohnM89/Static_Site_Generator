@@ -25,14 +25,14 @@ class TestHTMLNode(unittest.TestCase):
 
     def test_props_to_html_single_attr(self):
         node = HTMLNode(tag="h1", value="Blah", children=HTMLNode(tag="p", value="blah blah blah", props={"lang":"en-GB"}))
-        expected = 'lang="en-GB" '
+        expected = ' lang="en-GB"'
         self.assertEqual(node.children.props_to_html(), expected)
     
     def test_props_to_html_multi_attr(self):
         node = HTMLNode(props={"lang": "en-GB", "href": "https://boot.dev", "target": "_blank"})
         result = node.props_to_html()
-        self.assertIn('href="https://boot.dev" ', result)
-        self.assertIn('lang="en-GB" ', result)
+        self.assertIn(' href="https://boot.dev"', result)
+        self.assertIn(' lang="en-GB"', result)
 
     def test_props_method_is_none(self):
         node = HTMLNode()

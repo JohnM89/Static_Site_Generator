@@ -15,12 +15,13 @@ class HTMLNode:
 
 
     def to_html(self):
-        raise NotImplementedError
+        #raise NotImplementedError
+        pass
 
     def props_to_html(self):
         if self.props is None:
             return None
         output = ""
         for key, value in self.props.items():
-            output += f'{key}="{value}" '
+            output += f' {key}="{value}"'
         return output

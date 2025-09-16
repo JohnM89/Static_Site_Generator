@@ -11,7 +11,7 @@ class TestLeafNode(unittest.TestCase):
         for tag in tags:
             with self.subTest(tag=tag):
                 node = LeafNode(tag=tag, value="Blah", props={"lang":"en-GB"})
-                self.assertEqual(node.to_html(), f'<{tag} lang="en-GB">"Blah"</{tag}>')
+                self.assertEqual(node.to_html(), f'<{tag} lang="en-GB">Blah</{tag}>')
 
     def test_no_tag(self):
         node = LeafNode(value="Blah", props={"lang":"en-GB"})

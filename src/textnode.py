@@ -44,9 +44,10 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             new_nodes.append(node)
             continue
         else:
-            split_nodes = node.text.split(delim, maxsplit=2)
-            if len(split_nodes) == 2:
+            delim_count = node.text.count(delim)
+            if delim_count % 2 != 0:
                 raise ValueError("Unmatched delimiter")
+            split_nodes = node.text.split(delim, maxsplit=2)
             node_a, node_b, node_c = split_nodes
             if node_a:
                 new_nodes.append(TextNode(node_a, TextType.PLAIN))

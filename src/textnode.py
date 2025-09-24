@@ -1,6 +1,11 @@
 from enum import Enum   
 from leafnode import LeafNode 
 
+class DelimiterType(Enum):
+    BOLD = "**"
+    ITALIC = "_"
+    CODE = "`"
+
 class TextType(Enum):
     PLAIN = "plain"
     BOLD = "bold"
@@ -8,6 +13,7 @@ class TextType(Enum):
     CODE = "code"
     LINK = "link"
     IMG = "img"  
+    
 
 class TextNode:
 
@@ -23,7 +29,34 @@ class TextNode:
 
     def __repr__(self):
         return f'TextNode({self.text}, {self.text_type.value}, {self.url})'
-    
+
+def split_nodes_delimiter(old_nodes, delimiter, text_type):
+    delim = delimiter.value if isinstance(delimiter, DelimiterType) else delimiter
+    allowed_delimiter_types = {'**', '`', '_'}
+    if not isinstance(delim, str) or delim not in allowed_delimiter_types:
+        raise ValueError("Not a valid delimiter type")
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.PLAIN:
+            new_nodes.append(node)
+            continue
+        elif delim not in node.text:
+            new_nodes.append(node)
+            continue
+        else:
+            delim_count = node.text.count(delim)
+            if delim_count % 2 != 0:
+                raise ValueError("Unmatched delimiter")
+            split_nodes = node.text.split(delim, maxsplit=2)
+            node_a, node_b, node_c = split_nodes
+            if node_a:
+                new_nodes.append(TextNode(node_a, TextType.PLAIN))
+            new_nodes.append(TextNode(node_b, text_type))
+            if len(node_c) != 0:
+                new_nodes.extend(split_nodes_delimiter([TextNode(node_c, TextType.PLAIN)], delimiter, text_type))
+    return new_nodes
+        
+
 def text_node_to_html_node(textnode):
     tag = None
     prop = None

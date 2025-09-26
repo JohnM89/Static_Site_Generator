@@ -1,5 +1,6 @@
 from enum import Enum   
 from leafnode import LeafNode 
+import re
 
 class DelimiterType(Enum):
     BOLD = "**"
@@ -54,7 +55,43 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             if len(node_c) != 0:
                 new_nodes.extend(split_nodes_delimiter([TextNode(node_c, TextType.PLAIN)], delimiter, text_type))
     return new_nodes
-        
+
+# def extract_markdown_images(text):
+#     alt_texts = re.findall(r"!\[[\w\s]+\]", text)
+#     urls = re.findall(r"\([\S]+\)", text)
+#     clean_alts = []
+#     clean_urls = []
+#     for alt in alt_texts:
+#         clean_alts.append(alt.strip('![]')) 
+#     for url in urls:
+#         clean_urls.append(url.strip('()'))
+#     extracted = list(zip(clean_alts, clean_urls))
+#     return extracted
+
+# def extract_markdown_links(text):
+#     anchor_texts = re.findall(r"\[[\w\s]+\]", text)
+#     urls = re.findall(r"\([\S]+\)", text)
+#     clean_anchors = []
+#     clean_urls = []
+#     for anchor in anchor_texts:
+#         clean_anchors.append(anchor.strip('[]')) 
+#     for url in urls:
+#         clean_urls.append(url.strip('()'))
+#     extracted = list(zip(clean_anchors, clean_urls))
+#     return extracted
+#
+
+#fixed - previous implementation didnt utilize regex grouping and was too brittle/greedy
+def extract_markdown_images(text):
+    pattern = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
+    matches = re.findall(pattern, text)
+    return matches
+
+
+def extract_markdown_links(text):
+    pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
+    matches = re.findall(pattern, text)
+    return matches
 
 def text_node_to_html_node(textnode):
     tag = None

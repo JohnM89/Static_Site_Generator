@@ -56,42 +56,80 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                 new_nodes.extend(split_nodes_delimiter([TextNode(node_c, TextType.PLAIN)], delimiter, text_type))
     return new_nodes
 
-# def extract_markdown_images(text):
-#     alt_texts = re.findall(r"!\[[\w\s]+\]", text)
-#     urls = re.findall(r"\([\S]+\)", text)
-#     clean_alts = []
-#     clean_urls = []
-#     for alt in alt_texts:
-#         clean_alts.append(alt.strip('![]')) 
-#     for url in urls:
-#         clean_urls.append(url.strip('()'))
-#     extracted = list(zip(clean_alts, clean_urls))
-#     return extracted
-
-# def extract_markdown_links(text):
-#     anchor_texts = re.findall(r"\[[\w\s]+\]", text)
-#     urls = re.findall(r"\([\S]+\)", text)
-#     clean_anchors = []
-#     clean_urls = []
-#     for anchor in anchor_texts:
-#         clean_anchors.append(anchor.strip('[]')) 
-#     for url in urls:
-#         clean_urls.append(url.strip('()'))
-#     extracted = list(zip(clean_anchors, clean_urls))
-#     return extracted
-#
-
-#fixed - previous implementation didnt utilize regex grouping and was too brittle/greedy
 def extract_markdown_images(text):
     pattern = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
-    matches = re.findall(pattern, text)
-    return matches
+    # TODO only need first isinstance use re.search()
+    #matches = re.findall(pattern, text)
+    matches = re.search(pattern, text)
+    if matches:
+        return matches.groups()
+    return None
 
 
 def extract_markdown_links(text):
     pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
-    matches = re.findall(pattern, text)
-    return matches
+    #TODO see; extract_markdown_images
+    #matches = re.findall(pattern, text)
+    matches = re.search(pattern, text)
+    if matches:
+        return matches.groups()
+    return None
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        image_markdown = extract_markdown_images(node.text)
+        
+        if image_markdown:
+            #TODO dont need to index just switch to re.search() instead of findall(), later tho
+            #delim = f"![{image_markdown[0][0]}]({image_markdown[0][1]})"
+            delim = f"![{image_markdown[0]}]({image_markdown[1]})"
+            if delim not in node.text:
+                new_nodes.append(node)
+                continue
+            split_nodes = node.text.split(delim , maxsplit=1)
+
+            node_a, node_b = split_nodes
+
+            if node_a:
+                new_nodes.append(TextNode(node_a, TextType.PLAIN))
+            #new_nodes.append(TextNode(image_markdown[0][0], TextType.IMG, image_markdown[0][1]))
+
+            new_nodes.append(TextNode(image_markdown[0], TextType.IMG, image_markdown[1]))
+            if len(node_b) != 0:
+                new_nodes.extend(split_nodes_image([TextNode(node_b, TextType.PLAIN)]))
+        else:
+            new_nodes.append(node)
+
+    return new_nodes
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        link_markdown = extract_markdown_links(node.text)
+        if link_markdown:
+            #TODO see; split_nodes_image
+            #delim = f"![{link_markdown[0][0]}]({link_markdown[0][1]})"
+
+            delim = f"[{link_markdown[0]}]({link_markdown[1]})"
+            if delim not in node.text:
+                new_nodes.append(node)
+                continue
+            split_nodes = node.text.split(delim , maxsplit=1)
+
+            node_a, node_b = split_nodes
+
+            if node_a:
+                new_nodes.append(TextNode(node_a, TextType.PLAIN))
+            #new_nodes.append(TextNode(link_markdown[0][0], TextType.LINK, link_markdown[0][1]))
+
+            new_nodes.append(TextNode(link_markdown[0], TextType.LINK, link_markdown[1]))
+            if len(node_b) != 0:
+                new_nodes.extend(split_nodes_link([TextNode(node_b, TextType.PLAIN)]))
+        else:
+            new_nodes.append(node)
+
+    return new_nodes
 
 def text_node_to_html_node(textnode):
     tag = None

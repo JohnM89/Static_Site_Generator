@@ -58,8 +58,6 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
 
 def extract_markdown_images(text):
     pattern = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
-    # TODO only need first isinstance use re.search()
-    #matches = re.findall(pattern, text)
     matches = re.search(pattern, text)
     if matches:
         return matches.groups()
@@ -68,8 +66,6 @@ def extract_markdown_images(text):
 
 def extract_markdown_links(text):
     pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
-    #TODO see; extract_markdown_images
-    #matches = re.findall(pattern, text)
     matches = re.search(pattern, text)
     if matches:
         return matches.groups()
@@ -78,22 +74,25 @@ def extract_markdown_links(text):
 def split_nodes_image(old_nodes):
     new_nodes = []
     for node in old_nodes:
+        if node.text_type != TextType.PLAIN:
+            new_nodes.append(node)
+            continue
+
         image_markdown = extract_markdown_images(node.text)
         
         if image_markdown:
-            #TODO dont need to index just switch to re.search() instead of findall(), later tho
-            #delim = f"![{image_markdown[0][0]}]({image_markdown[0][1]})"
             delim = f"![{image_markdown[0]}]({image_markdown[1]})"
             if delim not in node.text:
                 new_nodes.append(node)
                 continue
             split_nodes = node.text.split(delim , maxsplit=1)
 
+            if len(split_nodes) != 2:
+                raise ValueError("invalid markdown, image section not closed")
             node_a, node_b = split_nodes
 
             if node_a:
                 new_nodes.append(TextNode(node_a, TextType.PLAIN))
-            #new_nodes.append(TextNode(image_markdown[0][0], TextType.IMG, image_markdown[0][1]))
 
             new_nodes.append(TextNode(image_markdown[0], TextType.IMG, image_markdown[1]))
             if len(node_b) != 0:
@@ -106,22 +105,24 @@ def split_nodes_image(old_nodes):
 def split_nodes_link(old_nodes):
     new_nodes = []
     for node in old_nodes:
+        if node.text_type != TextType.PLAIN:
+            new_nodes.append(node)
+            continue
+
         link_markdown = extract_markdown_links(node.text)
         if link_markdown:
-            #TODO see; split_nodes_image
-            #delim = f"![{link_markdown[0][0]}]({link_markdown[0][1]})"
 
             delim = f"[{link_markdown[0]}]({link_markdown[1]})"
             if delim not in node.text:
                 new_nodes.append(node)
                 continue
             split_nodes = node.text.split(delim , maxsplit=1)
-
+            if len(split_nodes) != 2:
+                raise ValueError("invalid markdown, link section not closed")
             node_a, node_b = split_nodes
 
             if node_a:
                 new_nodes.append(TextNode(node_a, TextType.PLAIN))
-            #new_nodes.append(TextNode(link_markdown[0][0], TextType.LINK, link_markdown[0][1]))
 
             new_nodes.append(TextNode(link_markdown[0], TextType.LINK, link_markdown[1]))
             if len(node_b) != 0:
@@ -130,6 +131,26 @@ def split_nodes_link(old_nodes):
             new_nodes.append(node)
 
     return new_nodes
+
+def text_to_textnodes(text):
+    new_node = [TextNode(text, TextType.PLAIN)]
+    allowed_delimiter_types = [('**', TextType.BOLD), ('`', TextType.CODE), ('_', TextType.ITALIC),]
+    for type_of in allowed_delimiter_types:
+        new_node = split_nodes_delimiter(new_node, type_of[0], type_of[1])
+    new_node = split_nodes_link(new_node)
+    new_node = split_nodes_image(new_node)
+    return new_node
+
+def markdown_to_blocks(markdown):
+    block_strings = markdown.split("\n\n")
+    clean = []
+    for block in block_strings:
+        block.strip()
+        if not block:
+            continue
+        clean.append(block)
+    return clean
+
 
 def text_node_to_html_node(textnode):
     tag = None

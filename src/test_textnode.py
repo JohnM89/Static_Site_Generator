@@ -1,5 +1,5 @@
 import unittest
-from textnode import TextNode, TextType, DelimiterType,markdown_to_blocks, text_to_textnodes, text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
+from textnode import TextNode, TextType, DelimiterType, BlockType, block_to_block_type, markdown_to_blocks, text_to_textnodes, text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
 
 
 
@@ -179,6 +179,22 @@ This is the same paragraph on a new line
         "- with items",
         ],
         )
+
+    def block_to_block_type_test(self):
+        text = ">This is a quote"
+        print(text)
+        type_of = block_to_block_type(text)
+        self.assertEqual(BlockType.QUOTE, type_of)
+    
+    def block_to_block_type_test_two(self):
+        texts = ["## header\n#### header", ">This is a quote\n >this is a quote too", "This is a regular paragraph", "```this is\n code```", "- this is a ul\n- so is this", "1. this\n 2. is\n 3. some ol", "3. this is regular paragraph"]
+        asserts = [BlockType.HEADING, BlockType.QUOTE, BlockType.PARAGRAPH, BlockType.CODE, BlockType.UNORDERED_LIST, BlockType.ORDERED_LIST, BlockType.PARAGRAPH]
+        inx = 0
+        for text in texts:
+            print(text)
+            type_of = block_to_block_type(text)
+            self.assertEqual(asserts[inx], type_of)
+            inx += 1
 
 if __name__ == "__main__":
     unittest.main()

@@ -181,31 +181,27 @@ def text_node_to_html_node(textnode):
         prop = {"src": textnode.url, "alt": textnode.text}
     return LeafNode(tag=tag, value=value, props=prop)
 
-            
-def block_to_block_type(text):
-    blocktypes = [("#{1,6} \w", BlockType.HEADING), ("```(.*?)```$", BlockType.CODE), (">", BlockType.QUOTE), ("- ", BlockType.UNORDERED_LIST), ("(?:[1-9])+. ", BlockType.ORDERED_LIST)]
-    for type_of in blocktypes:
-        if "\n" in text:
-            expected = None
-            block = None
-            for line in text.split("\n"):
-                clean = line.strip()
-                if not expected:
-                    match = re.match(rf"{type_of[0]}", line)
-                    if match:
-                        expected = type_of[0]
-                        continue
-                match = re.match(rf"{expected}", line)
-                if not match:
-                    return BlockType.PARAGRAPH
-                block = type_of[1]
-            return block
 
-
-        match = re.match(rf"{type_of[0]}", text)
-        #TODO finish matching
-        if match:
-            return type_of[1]
+def block_to_block_type(text): 
+    if re.match(r"#{1,6}\s+\S", text):
+            return BlockType.HEADING
+    if text.startswith("```") and text.endswith("```"):
+            return BlockType.CODE
+    lines = text.splitlines()
+    if re.match(r">", lines[0]):
+        #all returns true after checking .. all 
+        if all(re.match(r">", line) for line in lines):
+            return BlockType.QUOTE
+    if re.match(r"- ", lines[0]):
+        if all(re.match(r"- ", line) for line in lines):
+            return BlockType.UNORDERED_LIST
+    if re.match(r"1\.\s+", lines[0]):
+        #enumerate yeilds a pair of (index, item) as we loop 
+        if all(re.match(rf"{i}\.\s+", line) for i, line in enumerate(lines, 1)):
+            return BlockType.ORDERED_LIST
+    
     return BlockType.PARAGRAPH
+    
+
 
 

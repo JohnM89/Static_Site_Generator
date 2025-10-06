@@ -142,6 +142,25 @@ class TestInlineMarkdown(unittest.TestCase):
             TextNode(" and a ", TextType.PLAIN),
             TextNode("link", TextType.LINK, "https://boot.dev"),
         ])
+    #make sure test functions start with "test_" or they wont be discovered
+    def test_block_to_block_type_test(self):
+        text = ">This is a quote"
+        print(text)
+        type_of = block_to_block_type(text)
+        self.assertEqual(BlockType.QUOTE, type_of)
+    
+    def test_block_to_block_type_test_two(self):
+        #no spaces allowed between newlines that would be a user formatting issue
+        texts = ["## header\n#### header", ">This is a quote\n>this is a quote too", "This is a regular paragraph", "```this is\ncode```", "- this is a ul\n- so is this", "1. this\n2. is\n3. some ol", "3. this is regular paragraph"]
+        asserts = [BlockType.HEADING, BlockType.QUOTE, BlockType.PARAGRAPH, BlockType.CODE, BlockType.UNORDERED_LIST, BlockType.ORDERED_LIST, BlockType.PARAGRAPH]
+        inx = 0
+        for text in texts:
+            print(text)
+            type_of = block_to_block_type(text)
+            self.assertEqual(asserts[inx], type_of)
+            inx += 1
+    
+
     def test_markdown_to_blocks(self):
         md = """This is **bolded** paragraph
 
@@ -180,21 +199,6 @@ This is the same paragraph on a new line
         ],
         )
 
-    def block_to_block_type_test(self):
-        text = ">This is a quote"
-        print(text)
-        type_of = block_to_block_type(text)
-        self.assertEqual(BlockType.QUOTE, type_of)
-    
-    def block_to_block_type_test_two(self):
-        texts = ["## header\n#### header", ">This is a quote\n >this is a quote too", "This is a regular paragraph", "```this is\n code```", "- this is a ul\n- so is this", "1. this\n 2. is\n 3. some ol", "3. this is regular paragraph"]
-        asserts = [BlockType.HEADING, BlockType.QUOTE, BlockType.PARAGRAPH, BlockType.CODE, BlockType.UNORDERED_LIST, BlockType.ORDERED_LIST, BlockType.PARAGRAPH]
-        inx = 0
-        for text in texts:
-            print(text)
-            type_of = block_to_block_type(text)
-            self.assertEqual(asserts[inx], type_of)
-            inx += 1
 
 if __name__ == "__main__":
     unittest.main()

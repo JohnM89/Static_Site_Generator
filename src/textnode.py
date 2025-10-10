@@ -217,21 +217,35 @@ def markdown_to_html_node(markdown):
                 parent = ParentNode(tag="p",children=[text_node_to_html_node(x) for x in child_nodes])
                 nested_under_parent.append(parent)
                 continue
-            nested_under_parent.append(ParentNode(tag="p", children=[text_node_to_html_node(text_to_textnodes(block))]))
+            nested_under_parent.append(ParentNode(tag="p", children=[text_node_to_html_node(x) for x in text_to_textnodes(block.strip())]))
             continue
         if block_type == BlockType.HEADING:
             text = block.strip()
-            count = text.count("#", 0, 6)
-            text = text.lstrip("#") 
+            count = 0
+            for char in text:
+                if char == "#":
+                    count += 1
+                else:
+                    break
+            if count + 1 >= len(text):
+                raise ValueError(f"invalid heading level: {count}")
+            text = text[count + 1 :]
             parent = ParentNode(tag=f"h{count}", children=[text_node_to_html_node(x) for x in text_to_textnodes(text.strip())])
             nested_under_parent.append(parent)
             continue
         if block_type == BlockType.CODE:
-            pass
+            #split by newlines and then dorp the starting backtics and ending ones 
+            lines = block.split("\n")
+            text = "\n".join(lines[1:-1])
+            child = TextNode(text, TextType.PLAIN)
+            parent = ParentNode(tag="code", children=text_node_to_html_node(child))
+            nested_under_parent.append(ParentNode(tag="pre", children=parent))
+            continue
         if block_type == BlockType.QUOTE:
-            text = block.strip(" >")
+            #instead of stripping or slicing we can sub the " > " with "" using re.sub 
+            text = re.sub(r"^>\s?","", block)
             if "\n" in block:
-                text = "\n".join(x.strip(" >") for x in block.split("\n"))
+                text = "\n".join(re.sub(r"^>\s?", "", x) for x in block.split("\n"))
                 text = text.strip()
                 child_nodes = text_to_textnodes(text)
                 parent = ParentNode(tag="blockquote",children=[text_node_to_html_node(x) for x in child_nodes])
@@ -240,16 +254,16 @@ def markdown_to_html_node(markdown):
             nested_under_parent.append(ParentNode(tag="blockquote", children=[text_node_to_html_node(x) for x in text_to_textnodes(text.strip())]))
             continue
         if block_type == BlockType.ORDERED_LIST:
-            text = block.strip(" 1234567890.")
+            #likewise use re.sub for subbing out the ordered and unordered list chars
+            text = re.sub(r"^\d+[.]\s", "", block)
             if "\n" in block:
-                items = [x.strip(" 1234567890.") for x in block.split("\n")]
+                items = [re.sub(r"^\d+[.]\s", "", x) for x in block.split("\n")]
                 child_nodes = []
                 sub_children = []
                 for item in items:
-                    child_items = text_to_textnodes(item)
-                    for child in child_items:
-                        if len(child.text) > 0:
-                            sub_children.append(ParentNode(tag="li", children=[text_node_to_html_node(child)]))
+                    if item.strip():
+                        children = text_to_textnodes(item)
+                        sub_children.append(ParentNode(tag="li", children=[text_node_to_html_node(x) for x in children]))
                                 
                 parent = ParentNode(tag="ol", children=sub_children)
                 nested_under_parent.append(parent)
@@ -257,16 +271,16 @@ def markdown_to_html_node(markdown):
             nested_under_parent.append(ParentNode(tag="ol",children=[ParentNode(tag="li",children=[text_node_to_html_node(x) for x in text_to_textnodes(text.strip())])]))
             continue
         if block_type == BlockType.UNORDERED_LIST:
-            text = block.strip(" -")
+            text = re.sub(r"^[-*+]\s", "", block)
             if "\n" in block:
-                items = [x.strip(" -") for x in block.split("\n")]
+                items = [re.sub(r"^[-*+]\s", "", x) for x in block.split("\n")]
                 child_nodes = []
                 sub_children = []
                 for item in items:
-                    child_items = text_to_textnodes(item)
-                    for child in child_items:
-                        if len(child.text) > 0:
-                            sub_children.append(ParentNode(tag="li", children=[text_node_to_html_node(child)]))
+                    if item.strip():
+
+                        children = text_to_textnodes(item)
+                        sub_children.append(ParentNode(tag="li", children=[text_node_to_html_node(x) for x in children]))
                                 
                 parent = ParentNode(tag="ul", children=sub_children)
                 nested_under_parent.append(parent)

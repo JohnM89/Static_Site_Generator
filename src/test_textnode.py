@@ -181,8 +181,7 @@ This is **bolded** paragraph text in a p tag
 """
         node = markdown_to_html_node(md)
         html = node.to_html()
-        print(html)
-    # self.assertEqual(html, "")
+        self.assertEqual(html, "<div><blockquote>Famous Quote:\nHe who fizz must also\nbizz</blockquote></div>")
     def test_markdown_to_html_node_ordered_list(self):
         md = """
 1. hat
@@ -192,8 +191,17 @@ This is **bolded** paragraph text in a p tag
 
         node = markdown_to_html_node(md)
         html = node.to_html()
-        print(html)
+        self.assertEqual(html, "<div><ol><li>hat</li><li>shoes</li><li>something</li></ol></div>")
+    def test_markdown_to_html_node_code(self):
+        md = """```
+- hat
+- shoes
+- something
+```"""
 
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html, "<div><pre><code>- hat\n- shoes\n- something</code></pre></div>")
     def test_markdown_to_html_node_unordered_list(self):
         md = """
 - hat
@@ -203,7 +211,7 @@ This is **bolded** paragraph text in a p tag
 
         node = markdown_to_html_node(md)
         html = node.to_html()
-        print(html)
+        self.assertEqual(html, "<div><ul><li>hat</li><li>shoes</li><li>something</li></ul></div>")
     def test_markdown_to_blocks(self):
         md = """
 This is **bolded** paragraph

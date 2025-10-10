@@ -1,5 +1,5 @@
 import unittest
-from textnode import TextNode, TextType, DelimiterType, BlockType, block_to_block_type, markdown_to_blocks, text_to_textnodes, text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
+from textnode import TextNode, TextType, DelimiterType, BlockType, markdown_to_html_node, block_to_block_type, markdown_to_blocks, text_to_textnodes, text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
 
 
 
@@ -145,7 +145,6 @@ class TestInlineMarkdown(unittest.TestCase):
     #make sure test functions start with "test_" or they wont be discovered
     def test_block_to_block_type_test(self):
         text = ">This is a quote"
-        print(text)
         type_of = block_to_block_type(text)
         self.assertEqual(BlockType.QUOTE, type_of)
     
@@ -155,14 +154,59 @@ class TestInlineMarkdown(unittest.TestCase):
         asserts = [BlockType.HEADING, BlockType.QUOTE, BlockType.PARAGRAPH, BlockType.CODE, BlockType.UNORDERED_LIST, BlockType.ORDERED_LIST, BlockType.PARAGRAPH]
         inx = 0
         for text in texts:
-            print(text)
             type_of = block_to_block_type(text)
             self.assertEqual(asserts[inx], type_of)
             inx += 1
-    
 
+    def test_markdown_to_html_node_paragraph(self):
+        md = """
+This is **bolded** paragraph text in a p tag
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html, "<div><p>This is <b>bolded</b> paragraph text in a p tag</p></div>")
+    
+    def test_markdown_to_html_node_heading(self):
+        md = """
+## This is **bolded** header text
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html, "<div><h2>This is <b>bolded</b> header text</h2></div>")
+    def test_markdown_to_html_node_quote(self):
+        md = """
+> Famous Quote:
+> He who fizz must also
+> bizz
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        print(html)
+    # self.assertEqual(html, "")
+    def test_markdown_to_html_node_ordered_list(self):
+        md = """
+1. hat
+2. shoes
+3. something
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        print(html)
+
+    def test_markdown_to_html_node_unordered_list(self):
+        md = """
+- hat
+- shoes
+- something
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        print(html)
     def test_markdown_to_blocks(self):
-        md = """This is **bolded** paragraph
+        md = """
+This is **bolded** paragraph
 
 This is another paragraph with _italic_ text and `code` here
 This is the same paragraph on a new line

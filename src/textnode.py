@@ -203,7 +203,7 @@ def block_to_block_type(text):
             return BlockType.ORDERED_LIST
     
     return BlockType.PARAGRAPH
-    
+#move to utils 
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
     nested_under_parent = []
@@ -278,7 +278,6 @@ def markdown_to_html_node(markdown):
                 sub_children = []
                 for item in items:
                     if item.strip():
-
                         children = text_to_textnodes(item)
                         sub_children.append(ParentNode(tag="li", children=[text_node_to_html_node(x) for x in children]))
                                 

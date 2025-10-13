@@ -8,6 +8,7 @@ from genpage import generate_pages_recursive
 def main():
     if len(sys.argv) > 1:
         basepath = sys.argv[1]
+        print(basepath)
     else:
         basepath = "/"
         

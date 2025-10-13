@@ -9,7 +9,7 @@ def generate_page(from_path, template_path, dest_path, basepath):
         html_string = markdown_to_html_node(markdown).to_html()
         title = extract_title(markdown)
         out = template.replace("{{ Title }}", title).replace("{{ Content }}", html_string)
-        out = out.replace('href="/', f'href="{basepath}').replace('href="/', f'href="{basepath}')
+        out = out.replace('href="/', f'href="{basepath}').replace('src="/', f'src="{basepath}')
         dest_path.parent.mkdir(parents=True,exist_ok=True)
         dest_path.write_text(out)
 

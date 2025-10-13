@@ -1,7 +1,9 @@
-from textnode import TextNode, TextType      
+from textnode import TextNode 
+from gencontent import *
 import shutil
 from pathlib import Path
 from copystatic import copy_to_public
+from genpage import generate_pages_recursive
 def main():
     new_node = TextNode("This is some anchor text", TextType.LINK, "https://www.boot.dev")
         
@@ -13,6 +15,9 @@ def main():
         #Path object overloads the "/" operator to join paths cleanly
         path_static = project_root / "static"
         path_public = project_root / "public"
+        path_content = project_root / "content"
+        path_template = project_root / "template.html"
+        path_to_write = path_public  
         if not path_static.exists():
             raise FileNotFoundError(f"missing source: {path_static}")
         if not path_static.is_dir():
@@ -22,7 +27,7 @@ def main():
             shutil.rmtree(path_public)
         path_public.mkdir()
         copy_to_public(path_static, path_public)
-        
+        generate_pages_recursive(path_content, path_template, path_to_write)
     clean_up_public_and_copy()
 
 if __name__ == "__main__":

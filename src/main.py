@@ -1,20 +1,25 @@
 from textnode import TextNode 
 from gencontent import *
 import shutil
+import sys
 from pathlib import Path
 from copystatic import copy_to_public
 from genpage import generate_pages_recursive
 def main():
-    new_node = TextNode("This is some anchor text", TextType.LINK, "https://www.boot.dev")
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1:]
+    else:
+        basepath = "/"
         
-    def clean_up_public_and_copy():
+    def clean_up_public_and_copy(basepath):
         cwd = Path.cwd()
         #set walk back /src/main.py to ../
         project_root = cwd
 
         #Path object overloads the "/" operator to join paths cleanly
         path_static = project_root / "static"
-        path_public = project_root / "public"
+        #public for local docs for github
+        path_public = project_root / "docs"
         path_content = project_root / "content"
         path_template = project_root / "template.html"
         path_to_write = path_public  
@@ -27,8 +32,8 @@ def main():
             shutil.rmtree(path_public)
         path_public.mkdir()
         copy_to_public(path_static, path_public)
-        generate_pages_recursive(path_content, path_template, path_to_write)
-    clean_up_public_and_copy()
+        generate_pages_recursive(path_content, path_template, path_to_write, basepath)
+    clean_up_public_and_copy(basepath)
 
 if __name__ == "__main__":
     main()
